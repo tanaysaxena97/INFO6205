@@ -42,7 +42,7 @@ public class Newton {
             try {
                 final double y = f.apply(x);
                 if (Math.abs(y) < tolerance) return Either.right(x);
-                x = x - y / dfbydx.apply(x);
+                x = x - y / dfbydx.apply(x); // (intput - output) / OutputOfDerivative
             } catch (Exception e) {
                 return Either.left("Exception thrown solving " + equation + "=0, given x0=" + x0 + ", maxTries=" + maxTries + ", and tolerance=" + tolerance + " because " + e.getLocalizedMessage());
             }
@@ -52,7 +52,7 @@ public class Newton {
     public static void main(String[] args) {
 
         // Build the Newton's Approximation problem to be solved: cos(x) = x
-        Newton newton = new Newton("cos(x) - x", (double x) -> Math.cos(x) - x, (double x) -> -Math.sin(x) - 1);
+        Newton newton = new Newton("x*x + 2*x + 1", (double x) -> x*x + 2*x + 1, (double x) -> 2*x + 2);
 
         // Solve the problem starting with a value of x = 1;
         // requiring a precision of 10^-7;
