@@ -3,6 +3,9 @@
  */
 
 package edu.neu.coe.info6205.randomwalk;
+import java.io.IOException;
+import java.io.FileWriter;
+
 
 import java.util.Random;
 
@@ -10,7 +13,8 @@ public class RandomWalk {
 
     private int x = 0;
     private int y = 0;
-
+    private int[] xCoordinate = {1, 0, -1, 0};
+    private int[] yCoordinate = {0, 1, 0, -1};
     private final Random random = new Random();
 
     /**
@@ -20,7 +24,8 @@ public class RandomWalk {
      * @param dy the distance he moves in the y direction
      */
     private void move(int dx, int dy) {
-        // TO BE IMPLEMENTED
+        x += dx;
+        y += dy;
     }
 
     /**
@@ -29,7 +34,9 @@ public class RandomWalk {
      * @param m the number of steps the drunkard takes
      */
     private void randomWalk(int m) {
-        // TO BE IMPLEMENTED
+        while ((m --) != 0) {
+            move(xCoordinate[random.nextInt(4)], yCoordinate[random.nextInt(4)]);
+        }
     }
 
     /**
@@ -48,8 +55,7 @@ public class RandomWalk {
      * @return the (Euclidean) distance from the origin to the current position.
      */
     public double distance() {
-        // TO BE IMPLEMENTED
-        return 0;
+        return Math.sqrt((this.x * this.x) + (this.y * this.y));
     }
 
     /**
@@ -70,13 +76,19 @@ public class RandomWalk {
     }
 
     public static void main(String[] args) {
-        if (args.length == 0)
-            throw new RuntimeException("Syntax: RandomWalk steps [experiments]");
-        int m = Integer.parseInt(args[0]);
-        int n = 30;
-        if (args.length > 1) n = Integer.parseInt(args[1]);
-        double meanDistance = randomWalkMulti(m, n);
-        System.out.println(m + " steps: " + meanDistance + " over " + n + " experiments");
+        try {
+            FileWriter writer = new FileWriter("E:\\proj\\random_walk.csv");
+            writer.write("n,d\n");
+            Random rand = new Random();
+            for (int step = 1; step < 6000; step += 10) {
+                double meanDistance = (new RandomWalk()).randomWalkMulti(step, 60);
+                writer.write(step + "," + meanDistance + "\n");
+                System.out.println(step + "," + meanDistance);
+            }
+            writer.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
 }
