@@ -77,32 +77,12 @@ public class InsertionSort<X extends Comparable<X>> extends SortWithHelper<X> {
         new InsertionSort<T>().mutatingSort(ts);
     }
 
-    private void shuffle(Integer[] a, int lo, int hi) {
-        Random random = new Random();
-        for (int i = hi - 1; i > lo - 1; i--) {
-            int j = (i == 0) ? i : random.nextInt(i);
-            int tmp = a[i];
-            a[i] = a[j];
-            a[j] = tmp;
-        }
-    }
-
-    private void partiallySorted(Integer[] a) {
-        int j = a.length - 1;
-        for (int i = (int) (0.6 * a.length); i < a.length; i++) {
-            int tmp = a[j];
-            a[j] = a[i];
-            a[i] = tmp;
-            j--;
-        }
-    }
-
     private Integer[] generateArr(int n) {
+        Random random = new Random();
         Integer[] a = new Integer[n];
         for (int i = 0; i < n; i++) {
-            a[i] = i;
+            a[i] = random.nextInt();
         }
-        shuffle(a, 0, a.length - 1);
         return a;
     }
 
@@ -110,17 +90,25 @@ public class InsertionSort<X extends Comparable<X>> extends SortWithHelper<X> {
         try {
             FileWriter writer = new FileWriter("assignment_reports\\assignment2_Tanay_Saxena\\insertion_sort.csv");
             writer.write("n,original,reverseOrdered,sorted,partiallyOrdered\n");
-            for (int i = 2; i < 500; i *= 2) {
-//            create 4 copies of an array of length i with different order
+            for (int i = 200; i < 64000; i *= 2) {
+//            create 4 copies of a random array of length i with different order
                 Integer[] originalArray = generateArr(i);
+
                 Integer[] sortedArray = originalArray.clone();
-                Arrays.sort(sortedArray);
+                (new InsertionSort<Integer>()).sort(sortedArray, 0, sortedArray.length);
+
                 Integer[] reversedArray = sortedArray.clone();
                 Collections.reverse(Arrays.asList(reversedArray));
-                Integer[] partiallyOrderedArray = sortedArray.clone();
-                partiallySorted(partiallyOrderedArray);
-                Consumer<Integer[]> fun = orig -> sort((X[]) orig, 0, orig.length);
-                Benchmark_Timer<Integer[]> benchmarkTimer = new Benchmark_Timer<Integer[]>("Insertion Sort", fun);
+
+                Integer[] partiallyOrderedArray = originalArray.clone();
+                (new InsertionSort<Integer>()).sort(partiallyOrderedArray, (int) (0.6 * partiallyOrderedArray.length),
+                        partiallyOrderedArray.length);
+
+                UnaryOperator<Integer[]> pre = orig -> {return orig.clone();};
+                Consumer<Integer[]> fun = orig -> (new InsertionSort<Integer>()).sort( orig, 0, orig.length);
+                Benchmark_Timer<Integer[]> benchmarkTimer = new Benchmark_Timer<Integer[]>("Insertion Sort",
+                        pre, fun, null);
+
                 double a = benchmarkTimer.run(originalArray, 30);
                 double b = benchmarkTimer.run(reversedArray, 30);
                 double c = benchmarkTimer.run(sortedArray, 30);
