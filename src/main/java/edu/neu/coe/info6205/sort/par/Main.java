@@ -1,9 +1,7 @@
 package edu.neu.coe.info6205.sort.par;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,42 +15,39 @@ import java.util.concurrent.ForkJoinPool;
 public class Main {
 
     public static void main(String[] args) {
-        processArgs(args);
-        System.out.println("Degree of parallelism: " + ForkJoinPool.getCommonPoolParallelism());
-        Random random = new Random();
-        int[] array = new int[2000000];
-        ArrayList<Long> timeList = new ArrayList<>();
-        for (int j = 50; j < 100; j++) {
-            ParSort.cutoff = 10000 * (j + 1);
-            // for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
-            long time;
-            long startTime = System.currentTimeMillis();
-            for (int t = 0; t < 10; t++) {
-                for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
-                ParSort.sort(array, 0, array.length);
-            }
-            long endTime = System.currentTimeMillis();
-            time = (endTime - startTime);
-            timeList.add(time);
+        trials();
+    }
 
-
-            System.out.println("cutoff：" + (ParSort.cutoff) + "\t\t10times Time:" + time + "ms");
-
-        }
+    public static void trials() {
+        FileWriter writer = null;
         try {
-            FileOutputStream fis = new FileOutputStream("./src/result.csv");
-            OutputStreamWriter isr = new OutputStreamWriter(fis);
-            BufferedWriter bw = new BufferedWriter(isr);
-            int j = 0;
-            for (long i : timeList) {
-                String content = (double) 10000 * (j + 1) / 2000000 + "," + (double) i / 10 + "\n";
-                j++;
-                bw.write(content);
-                bw.flush();
+            writer = new FileWriter(Paths.get("assignment_reports",
+                    "assignment5_Tanay_Saxena", "par_sort.csv").toString());
+            writer.write("size,thread_count,cutoff,time\n");
+            Random random = new Random();
+            for (int pw = 18; pw <= 24; pw++) {
+                int size = 1<<pw;
+                int[] array = new int[size];
+                for (int p = 1; p <= 16; p *= 2) {
+                    ParSort.setCustomParallelism(p);
+                    for (int j = 50; j < 100; j += 5) {
+                        ParSort.cutoff = 10000 * (j + 1);
+                        double time;
+                        long startTime = System.currentTimeMillis();
+                        for (int t = 0; t < 10; t++) {
+                            for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
+                            ParSort.sort(array, 0, array.length);
+                        }
+                        long endTime = System.currentTimeMillis();
+                        time = (double) (endTime - startTime) / 10;
+                        writer.write(size + "," + p + "," + ParSort.cutoff + "," + time + "\n");
+                        System.out.println("cutoff：" + ParSort.cutoff + "\t\tTime:" + time + "ms");
+                    }
+                }
             }
-            bw.close();
-
-        } catch (IOException e) {
+            writer.close();
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
